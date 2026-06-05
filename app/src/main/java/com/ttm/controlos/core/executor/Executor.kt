@@ -3,6 +3,7 @@ package com.ttm.controlos.core.executor
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.provider.Settings
 
 import com.ttm.controlos.core.intent.TTMIntent
 import com.ttm.controlos.core.resolver.PackageResolver
@@ -12,23 +13,13 @@ import com.ttm.controlos.core.security.PolicyEngine
  * Executor
  *
  * Final execution layer of the system.
- *
- * Responsibilities:
- * - Execute validated TTMIntent
- * - Perform Android system actions
- * - NEVER decide permission logic (handled by PolicyEngine)
  */
 object Executor {
 
-    /**
-     * Entry point for all command execution.
-     */
     fun execute(context: Context, intent: TTMIntent) {
 
-        // POLICY CHECK (single source of truth)
-        if (!PolicyEngine.isAllowed(intent)) {
-            return
-        }
+        // Single security gate
+        if (!PolicyEngine.isAllowed(intent)) return
 
         when (intent) {
 
@@ -69,22 +60,74 @@ object Executor {
              * LIST APPS
              */
             TTMIntent.ListApps -> {
-                // Future: connect to UI state layer
+                // TODO: connect to UI state / repository
             }
 
             /**
              * SHOW NOTIFICATIONS
              */
             TTMIntent.ShowNotificationApps -> {
-                // Future: connect to NotificationTrackingService
+                // TODO: connect NotificationTrackingService
+            }
+
+            /**
+             * SET BRIGHTNESS
+             */
+            is TTMIntent.SetBrightness -> {
+                setBrightness(context, intent.value)
+            }
+
+            /**
+             * SET VOLUME
+             */
+            is TTMIntent.SetVolume -> {
+                setVolume(context, intent.value)
             }
 
             /**
              * UNKNOWN COMMAND
              */
             is TTMIntent.Unknown -> {
-                // No-op (UI layer will handle feedback later)
+                // no-op
             }
+        }
+    }
+
+    /**
+     * Brightness control (system level)
+     */
+    private fun setBrightness(context: Context, value: Int) {
+        try {
+            val resolved = value.coerceIn(0, 255)
+
+            Settings.System.putInt(
+                context.contentResolver,
+                Settings.System.SCREEN_BRIGHTNESS,
+                resolved
+            )
+        } catch (e: Exception) {
+            // silent fail (later hook logging system)
+        }
+    }
+
+    /**
+     * Volume control (media stream)
+     */
+    private fun setVolume(context: Context, value: Int) {
+        try {
+            val audioManager =
+                context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+
+            val maxVolume = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
+            val target = (maxVolume * (value / 100.0)).toInt()
+
+            audioManager.setStreamVolume(
+                android.media.AudioManager.STREAM_MUSIC,
+                target,
+                0
+            )
+        } catch (e: Exception) {
+            // silent fail
         }
     }
 }

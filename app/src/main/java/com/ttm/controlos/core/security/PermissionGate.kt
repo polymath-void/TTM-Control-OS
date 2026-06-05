@@ -5,43 +5,48 @@ import com.ttm.controlos.core.intent.TTMIntent
 /**
  * PermissionGate
  *
- * Central safety layer that decides whether an intent is allowed
- * to be executed by the system.
- *
- * This is NOT a UI permission system.
- * This is a command execution firewall.
+ * Central safety firewall for command execution.
  */
 object PermissionGate {
 
-    /**
-     * Main authorization check.
-     *
-     * Returns true if the intent is safe to execute.
-     */
     fun isAllowed(intent: TTMIntent): Boolean {
         return when (intent) {
 
-            // Always safe read operations
+            /**
+             * SAFE READ OPERATIONS
+             */
             TTMIntent.ListApps,
             TTMIntent.ShowNotificationApps -> true
 
-            // App opening is safe
+            /**
+             * APP OPERATIONS
+             */
             is TTMIntent.OpenApp -> true
 
-            // Uninstall is restricted (basic protection rule)
             is TTMIntent.UninstallApp -> {
                 isAllowedToUninstall(intent.appName)
             }
 
-            // Unknown commands are blocked
+            /**
+             * DEVICE CONTROL
+             */
+            is TTMIntent.SetBrightness -> {
+                isAllowedBrightness(intent.value)
+            }
+
+            is TTMIntent.SetVolume -> {
+                isAllowedVolume(intent.value)
+            }
+
+            /**
+             * UNKNOWN COMMANDS
+             */
             is TTMIntent.Unknown -> false
         }
     }
 
     /**
-     * Restrict uninstall operations.
-     *
-     * Add system-critical app protection here.
+     * Protect system-critical apps
      */
     private fun isAllowedToUninstall(appName: String): Boolean {
 
@@ -59,15 +64,36 @@ object PermissionGate {
     }
 
     /**
-     * Optional: reason for denial (for UI feedback later)
+     * Brightness safety boundary
+     */
+    private fun isAllowedBrightness(value: Int): Boolean {
+        return value in 0..255
+    }
+
+    /**
+     * Volume safety boundary
+     */
+    private fun isAllowedVolume(value: Int): Boolean {
+        return value in 0..100
+    }
+
+    /**
+     * Optional UI feedback layer
      */
     fun getRejectionReason(intent: TTMIntent): String? {
         return when (intent) {
+
             is TTMIntent.UninstallApp ->
                 "This app is protected from uninstall operations"
 
             is TTMIntent.Unknown ->
                 "Unknown command"
+
+            is TTMIntent.SetBrightness ->
+                "Brightness value out of safe range (0–255)"
+
+            is TTMIntent.SetVolume ->
+                "Volume value out of safe range (0–100)"
 
             else -> null
         }
