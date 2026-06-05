@@ -1,0 +1,7 @@
+# Gradle temporary files and caches
+.gradle/
+build/
+app/build/
+
+# Local configuration files
+local.properties
