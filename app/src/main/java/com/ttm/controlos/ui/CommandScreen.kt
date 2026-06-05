@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.dp
 
 import com.ttm.controlos.core.executor.Executor
 import com.ttm.controlos.core.parser.CommandParser
+import com.ttm.controlos.core.parser.CommandResult
 
 /**
  * CommandScreen
@@ -52,11 +53,22 @@ fun CommandScreen(context: Context) {
 
         Button(
             onClick = {
-                val intent = CommandParser.parse(input)
-
-                Executor.execute(context, intent)
-
-                output = "Executed: $intent"
+                when (val result = CommandParser.parse(input)) {
+        
+                    is CommandResult.Success -> {
+        
+                        val intent = result.intent
+        
+                        Executor.execute(context, intent)
+        
+                        output = "Executed: $intent"
+                    }
+        
+                    is CommandResult.Error -> {
+                        output = result.message
+                    }
+                }
+        
                 input = ""
             },
             modifier = Modifier.fillMaxWidth()
@@ -64,6 +76,7 @@ fun CommandScreen(context: Context) {
             Text("Run Command")
         }
 
+        
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(

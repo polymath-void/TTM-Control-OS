@@ -9,7 +9,11 @@ import com.ttm.controlos.core.security.PermissionHandler
 
 object CommandEngine {
 
-    fun handle(context: Context, input: String) {
+    fun handle(
+        context: Context,
+        input: String,
+        onError: (String) -> Unit
+    ) {
 
         when (val result = CommandParser.parse(input)) {
 
@@ -25,7 +29,7 @@ object CommandEngine {
             }
 
             is CommandResult.Error -> {
-                // later UI callback system
+                onError(result.message)
             }
         }
     }
