@@ -1,45 +1,68 @@
 package com.ttm.controlos
 
 import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import com.ttm.controlos.core.executor.Executor
-import com.ttm.controlos.core.intent.TTMIntent
+import com.ttm.controlos.core.parser.CommandParser
 import com.ttm.controlos.core.system.SystemOutput
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var outputView: TextView
+    private lateinit var inputBox: EditText
+    private lateinit var sendButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         outputView = TextView(this).apply {
-            textSize = 16f
             text = "TTM Control OS Ready\n"
+            textSize = 14f
         }
 
-        setContentView(outputView)
+        inputBox = EditText(this).apply {
+            hint = "Type command (e.g. set brightness 80)"
+        }
 
-        // CONNECT OUTPUT PIPELINE
+        sendButton = Button(this).apply {
+            text = "Execute"
+        }
+
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(outputView)
+            addView(inputBox)
+            addView(sendButton)
+        }
+
+        setContentView(layout)
+
         SystemOutput.callback = { msg ->
             runOnUiThread {
                 outputView.append("\n$msg")
             }
         }
 
-        // TEST COMMANDS (MVP DEMO)
-        runDemo()
+        sendButton.setOnClickListener {
+            val input = inputBox.text.toString()
+            handleCommand(input)
+            inputBox.text.clear()
+        }
     }
 
-    private fun runDemo() {
+    private fun handleCommand(input: String) {
 
-        Executor.execute(this, TTMIntent.ListApps)
+        val intent = CommandParser.parse(input)
 
-        Executor.execute(this, TTMIntent.SetVolume(50))
+        if (intent == null) {
+            SystemOutput.send("Invalid command: $input")
+            return
+        }
 
-        Executor.execute(this, TTMIntent.SetBrightness(120))
-
-        Executor.execute(this, TTMIntent.OpenApp("whatsapp"))
+        Executor.execute(this, intent)
     }
 }
