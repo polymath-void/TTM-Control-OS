@@ -44,7 +44,7 @@ object PolicyEngine {
     }
 
     /**
-     * Policy evaluation rules
+     * Core policy evaluation
      */
     private fun evaluatePolicy(
         intent: TTMIntent,
@@ -80,13 +80,21 @@ object PolicyEngine {
                         intent.value in 0..100
             }
 
+            /**
+             * FIX: missing branch (Kotlin requirement)
+             */
+            Capability.CONTROL_NETWORK -> {
+                // currently not supported in MVP
+                false
+            }
+
             Capability.UNKNOWN ->
                 false
         }
     }
 
     /**
-     * System app protection
+     * System protection rules
      */
     private fun isProtectedApp(appName: String): Boolean {
         val protected = setOf(
