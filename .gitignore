@@ -1,7 +1,25 @@
-# Gradle temporary files and caches
+# Gradle
 .gradle/
-build/
-app/build/
+**/build/
 
-# Local configuration files
+# Android outputs
+*.apk
+*.aab
+
+# Local configuration
 local.properties
+
+# Java/Kotlin artifacts
+*.class
+*.jar
+
+# Logs
+*.log
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+
+# OS files
+.DS_Store
