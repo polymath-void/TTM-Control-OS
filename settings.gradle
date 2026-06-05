@@ -1,0 +1,2 @@
+rootProject.name = "TTM-Control-OS"
+include(":app")
