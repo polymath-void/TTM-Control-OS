@@ -4,19 +4,17 @@ import com.ttm.controlos.core.intent.TTMIntent
 
 object CommandParser {
 
-    fun parse(input: String): TTMIntent? {
+    fun parse(input: String): CommandResult {
 
         val cmd = input.lowercase().trim()
 
-        return when {
+        val intent: TTMIntent? = when {
 
-            cmd.startsWith("open ") -> {
+            cmd.startsWith("open ") ->
                 TTMIntent.OpenApp(cmd.removePrefix("open ").trim())
-            }
 
-            cmd.startsWith("uninstall ") -> {
+            cmd.startsWith("uninstall ") ->
                 TTMIntent.UninstallApp(cmd.removePrefix("uninstall ").trim())
-            }
 
             cmd.startsWith("set brightness ") -> {
                 val value = cmd.removePrefix("set brightness ").trim().toIntOrNull()
@@ -28,15 +26,19 @@ object CommandParser {
                 value?.let { TTMIntent.SetVolume(it) }
             }
 
-            cmd == "list apps" -> {
+            cmd == "list apps" ->
                 TTMIntent.ListApps
-            }
 
-            cmd == "notifications" -> {
+            cmd == "notifications" ->
                 TTMIntent.ShowNotificationApps
-            }
 
             else -> null
+        }
+
+        return if (intent != null) {
+            CommandResult.Success(intent)
+        } else {
+            CommandResult.Error("Invalid command: $input")
         }
     }
 }
