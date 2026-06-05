@@ -1,0 +1,11 @@
+open whatsapp
+open chrome
+list apps
+show notifications
+
+set brightness 50
+set brightness 120
+set volume 30
+set volume 80
+
+uninstall whatsapp
