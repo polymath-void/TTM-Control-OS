@@ -1,33 +1,45 @@
 package com.ttm.controlos
 
 import android.os.Bundle
+import android.widget.TextView
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+import com.ttm.controlos.core.executor.Executor
+import com.ttm.controlos.core.intent.TTMIntent
+import com.ttm.controlos.core.system.SystemOutput
 
-import com.ttm.controlos.core.resolver.PackageResolver
-import com.ttm.controlos.ui.CommandScreen
-
-/**
- * MainActivity
- *
- * Entry point of TTM Control OS.
- *
- * Responsibilities:
- * - Initialize system modules
- * - Load installed apps into resolver cache
- * - Start UI layer
- */
 class MainActivity : ComponentActivity() {
+
+    private lateinit var outputView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 1. Initialize package resolver cache
-        PackageResolver.loadInstalledApps(this)
-
-        // 2. Start UI
-        setContent {
-            CommandScreen(this)
+        outputView = TextView(this).apply {
+            textSize = 16f
+            text = "TTM Control OS Ready\n"
         }
+
+        setContentView(outputView)
+
+        // CONNECT OUTPUT PIPELINE
+        SystemOutput.callback = { msg ->
+            runOnUiThread {
+                outputView.append("\n$msg")
+            }
+        }
+
+        // TEST COMMANDS (MVP DEMO)
+        runDemo()
+    }
+
+    private fun runDemo() {
+
+        Executor.execute(this, TTMIntent.ListApps)
+
+        Executor.execute(this, TTMIntent.SetVolume(50))
+
+        Executor.execute(this, TTMIntent.SetBrightness(120))
+
+        Executor.execute(this, TTMIntent.OpenApp("whatsapp"))
     }
 }
