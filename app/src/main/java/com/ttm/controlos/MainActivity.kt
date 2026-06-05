@@ -9,6 +9,8 @@ import androidx.activity.ComponentActivity
 import com.ttm.controlos.core.executor.Executor
 import com.ttm.controlos.core.parser.CommandParser
 import com.ttm.controlos.core.system.SystemOutput
+import com.ttm.controlos.core.parser.CommandResult
+import com.ttm.controlos.core.engine.CommandEngine
 
 class MainActivity : ComponentActivity() {
 
@@ -55,14 +57,13 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleCommand(input: String) {
-
-        val intent = CommandParser.parse(input)
-
-        if (intent == null) {
-            SystemOutput.send("Invalid command: $input")
-            return
-        }
-
-        Executor.execute(this, intent)
+    
+        CommandEngine.handle(
+            context = this,
+            input = input,
+            onError = { msg ->
+                SystemOutput.send(msg)
+            }
+        )
     }
 }
