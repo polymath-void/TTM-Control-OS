@@ -21,10 +21,13 @@ object CommandEngine {
 
                 val intent = result.intent
 
-                val permission = PermissionRouter.requiredPermission(intent)
-
-                PermissionHandler.request(context, permission)
-
+                val granted = PermissionChecker.isGranted(context, permission)
+                
+                if (!granted) {
+                    PermissionHandler.request(context, permission)
+                    return
+                }
+                
                 Executor.execute(context, intent)
             }
 
