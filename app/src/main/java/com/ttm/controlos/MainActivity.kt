@@ -23,6 +23,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        PackageResolver.loadInstalledApps(this)
+        
+        val count = PackageResolver.getAllApps().size
+        SystemOutput.send("APP CACHE LOADED: $count apps")
+
         outputView = TextView(this).apply {
             text = "TTM Control OS Ready\n"
             textSize = 14f
