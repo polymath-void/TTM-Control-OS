@@ -12,7 +12,7 @@ object CommandEngine {
     fun handle(
         context: Context,
         input: String,
-        onError: (String) -> Unit
+        onError: (String) -> Unit = {}
     ) {
 
         when (val result = CommandParser.parse(input)) {
@@ -21,13 +21,10 @@ object CommandEngine {
 
                 val intent = result.intent
 
-                val granted = PermissionChecker.isGranted(context, permission)
-                
-                if (!granted) {
-                    PermissionHandler.request(context, permission)
-                    return
-                }
-                
+                val permission = PermissionRouter.requiredPermission(intent)
+
+                PermissionHandler.request(context, permission)
+
                 Executor.execute(context, intent)
             }
 
