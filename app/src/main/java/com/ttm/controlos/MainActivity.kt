@@ -41,6 +41,10 @@ class MainActivity : ComponentActivity() {
             addView(sendButton)
         }
 
+        SystemOutput.send(
+            "Loaded ${PackageResolver.getAllApps().size} apps"
+        )
+
         setContentView(layout)
 
         SystemOutput.callback = { msg ->
