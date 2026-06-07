@@ -45,6 +45,8 @@ dependencies {
     implementation 'androidx.compose.material3:material3' // Required for MaterialTheme, Text, Button
     implementation 'androidx.activity:activity-compose:1.8.2'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    
 
     // Root I/O Management
     implementation("com.github.topjohnwu.libsu:core:6.0.0")

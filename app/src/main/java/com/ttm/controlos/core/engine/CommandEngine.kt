@@ -5,13 +5,10 @@ import com.ttm.controlos.core.executor.RootCommandRouter
 import com.ttm.controlos.core.parser.CommandParser
 import com.ttm.controlos.core.parser.CommandResult
 import com.ttm.controlos.core.system.SystemOutput
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 class CommandEngine(context: Context) {
 
@@ -27,19 +24,16 @@ class CommandEngine(context: Context) {
                 val intent = result.intent
 
                 engineScope.launch {
-                    _systemOutput.value = SystemOutput.Processing("Executing: ${intent.action}")
+                    _systemOutput.value = SystemOutput.Processing("Executing command...")
 
-                    val routerResult = rootRouter.routeCommand(intent.action, intent.target)
+                    val routerResult = rootRouter.route(intent)
 
-                    // Exhaustive when expression
+                    // The 'when' expression is now fully exhaustive
                     _systemOutput.value = when (routerResult) {
                         is RootCommandRouter.RouterResult.Success -> 
                             SystemOutput.Success(routerResult.info)
                         is RootCommandRouter.RouterResult.Failure -> 
                             SystemOutput.Error(routerResult.errorReason)
-                        // This handles any future additions to RouterResult automatically
-                        // or prevents "must be exhaustive" errors.
-                        else -> SystemOutput.Error("Unknown Router Result")
                     }
                 }
             }
@@ -48,3 +42,4 @@ class CommandEngine(context: Context) {
             }
         }
     }
+}
