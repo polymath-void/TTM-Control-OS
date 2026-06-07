@@ -11,7 +11,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://jitpack.io' } // Required for libsu resolution
+        maven { url 'https://maven.scijava.org/content/repositories/public/' }
     }
 }
 
