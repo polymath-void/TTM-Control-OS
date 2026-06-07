@@ -22,21 +22,24 @@ class CommandEngine(context: Context) {
     val systemOutput: StateFlow<SystemOutput> = _systemOutput.asStateFlow()
 
     fun processCommand(input: String) {
-        // Integrate with your existing Parser
         when (val result = CommandParser.parse(input)) {
             is CommandResult.Success -> {
                 val intent = result.intent
-                
-                // Here we bridge your intent to the router
-                // Assuming intent.action and intent.target exist
+
                 engineScope.launch {
                     _systemOutput.value = SystemOutput.Processing("Executing: ${intent.action}")
-                    
+
                     val routerResult = rootRouter.routeCommand(intent.action, intent.target)
-                    
+
+                    // Exhaustive when expression
                     _systemOutput.value = when (routerResult) {
-                        is RootCommandRouter.RouterResult.Success -> SystemOutput.Success(routerResult.info)
-                        is RootCommandRouter.RouterResult.Failure -> SystemOutput.Error(routerResult.errorReason)
+                        is RootCommandRouter.RouterResult.Success -> 
+                            SystemOutput.Success(routerResult.info)
+                        is RootCommandRouter.RouterResult.Failure -> 
+                            SystemOutput.Error(routerResult.errorReason)
+                        // This handles any future additions to RouterResult automatically
+                        // or prevents "must be exhaustive" errors.
+                        else -> SystemOutput.Error("Unknown Router Result")
                     }
                 }
             }
@@ -45,4 +48,3 @@ class CommandEngine(context: Context) {
             }
         }
     }
-}

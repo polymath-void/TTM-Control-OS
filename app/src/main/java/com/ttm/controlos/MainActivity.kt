@@ -6,31 +6,35 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.ComponentActivity
-import com.ttm.controlos.core.executor.Executor
-import com.ttm.controlos.core.parser.CommandParser
-import com.ttm.controlos.core.system.SystemOutput
-import com.ttm.controlos.core.parser.CommandResult
+import androidx.lifecycle.lifecycleScope
 import com.ttm.controlos.core.engine.CommandEngine
 import com.ttm.controlos.core.resolver.PackageResolver
-
+import com.ttm.controlos.core.system.SystemOutput
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var outputView: TextView
     private lateinit var inputBox: EditText
     private lateinit var sendButton: Button
+    
+    // Instance of the engine to manage state and logic
+    private lateinit var commandEngine: CommandEngine
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        PackageResolver.loadInstalledApps(this)
-        
-        val count = PackageResolver.getAllApps().size
-        SystemOutput.send("APP CACHE LOADED: $count apps")
+        // 1. Initialize Engine
+        commandEngine = CommandEngine(this)
 
+        // 2. Load Resources
+        PackageResolver.loadInstalledApps(this)
+
+        // 3. UI Setup
         outputView = TextView(this).apply {
-            text = "TTM Control OS Ready\n"
+            text = "TTM Control OS Initialized\nApps Cached: ${PackageResolver.getAllApps().size}"
             textSize = 14f
+            setPadding(16, 16, 16, 16)
         }
 
         inputBox = EditText(this).apply {
@@ -48,33 +52,25 @@ class MainActivity : ComponentActivity() {
             addView(sendButton)
         }
 
-        SystemOutput.send(
-            "Loaded ${PackageResolver.getAllApps().size} apps"
-        )
-
         setContentView(layout)
 
-        SystemOutput.callback = { msg ->
-            runOnUiThread {
-                outputView.append("\n$msg")
+        // 4. Observe Engine Output (Reactive Flow)
+        // lifecycleScope ensures this collection stops when the activity is destroyed
+        lifecycleScope.launch {
+            commandEngine.systemOutput.collect { output ->
+                runOnUiThread {
+                    outputView.append("\n> $output")
+                }
             }
         }
 
+        // 5. Execution Logic
         sendButton.setOnClickListener {
             val input = inputBox.text.toString()
-            handleCommand(input)
-            inputBox.text.clear()
-        }
-    }
-
-    private fun handleCommand(input: String) {
-    
-        CommandEngine.handle(
-            context = this,
-            input = input,
-            onError = { msg ->
-                SystemOutput.send(msg)
+            if (input.isNotBlank()) {
+                commandEngine.processCommand(input)
+                inputBox.text.clear()
             }
-        )
+        }
     }
 }
