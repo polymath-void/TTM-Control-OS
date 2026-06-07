@@ -1,10 +1,18 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.ttm.controlos">
+
+    <!-- Required for brightness system writes -->
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
 
     <application
-        android:label="TTM Control OS"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        android:allowBackup="true"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Material3.DayNight.NoActionBar">
 
-        <activity android:name=".MainActivity"
+        <activity
+            android:name=".MainActivity"
             android:exported="true">
 
             <intent-filter>

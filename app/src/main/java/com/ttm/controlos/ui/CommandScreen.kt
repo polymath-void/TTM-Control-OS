@@ -5,83 +5,51 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.ttm.controlos.core.engine.CommandEngine
+import com.ttm.controlos.core.system.SystemOutput
 
-import com.ttm.controlos.core.executor.Executor
-import com.ttm.controlos.core.parser.CommandParser
-import com.ttm.controlos.core.parser.CommandResult
-
-/**
- * CommandScreen
- *
- * Primary UI layer for entering system commands.
- *
- * Flow:
- * User Input → CommandParser → TTMIntent → Executor
- *
- * This UI is intentionally minimal because:
- * - Vue animation layer may replace visuals later
- * - Kotlin handles all execution logic
- */
 @Composable
-fun CommandScreen(context: Context) {
-
+fun CommandScreen() {
+    val context = LocalContext.current
+    // Instantiate engine once for the lifecycle of the screen
+    val engine = remember { CommandEngine(context) }
+    val systemOutput by engine.systemOutput.collectAsState()
+    
     var input by remember { mutableStateOf("") }
-    var output by remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-
-        Text(
-            text = "TTM Control OS",
-            style = MaterialTheme.typography.headlineSmall
-        )
-
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Text(text = "TTM Control OS (Root Enabled)", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(16.dp))
 
         TextField(
             value = input,
             onValueChange = { input = it },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Enter command...") }
+            placeholder = { Text("Enter command (e.g., 'uninstall <pkg>')") }
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         Button(
             onClick = {
-                when (val result = CommandParser.parse(input)) {
-        
-                    is CommandResult.Success -> {
-        
-                        val intent = result.intent
-        
-                        Executor.execute(context, intent)
-        
-                        output = "Executed: $intent"
-                    }
-        
-                    is CommandResult.Error -> {
-                        output = result.message
-                    }
-                }
-        
+                engine.processCommand(input)
                 input = ""
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Run Command")
+            Text("Run Root Command")
         }
 
-        
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = output,
-            style = MaterialTheme.typography.bodyMedium
-        )
+        // Observe reactive states
+        when (val state = systemOutput) {
+            is SystemOutput.Idle -> Text("Ready.")
+            is SystemOutput.Processing -> Text("Status: ${state.status}", color = MaterialTheme.colorScheme.primary)
+            is SystemOutput.Success -> Text("Result: ${state.message}", color = MaterialTheme.colorScheme.tertiary)
+            is SystemOutput.Error -> Text("Error: ${state.reason}", color = MaterialTheme.colorScheme.error)
+        }
     }
 }
