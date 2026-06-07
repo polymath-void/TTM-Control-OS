@@ -48,22 +48,19 @@ android {
 }
 
 dependencies {
-    // Jetpack Compose & AndroidX Core
-	implementation("com.github.topjohnwu.libsu:core:6.0.0")
-	implementation("com.github.topjohnwu.libsu:io:6.0.0")
-	implementation("com.github.topjohnwu.libsu:service:6.0.0")
-    // Root I/O and Shell Management
-	// Root I/O and Shell Management
-	def libsuVersion = "5.2.2"
-	implementation "com.github.topjohnwu:core:${libsuVersion}"
-	implementation "com.github.topjohnwu:io:${libsuVersion}"
+    // Root I/O Management (Consolidated to version 6.0.0)
+    implementation("com.github.topjohnwu.libsu:core:6.0.0")
+    implementation("com.github.topjohnwu.libsu:io:6.0.0")
+    implementation("com.github.topjohnwu.libsu:service:6.0.0")
 
-    // Testing
+    // Testing and Debugging (With explicit versions)
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     androidTestImplementation platform('androidx.compose:compose-bom:2024.02.00')
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
-    debugImplementation 'androidx.compose.ui:ui-tooling'
-    debugImplementation 'androidx.compose.ui:ui-test-manifest'
+    
+    // Fixed Tooling Dependencies
+    debugImplementation 'androidx.compose.ui:ui-tooling:1.6.0'
+    debugImplementation 'androidx.compose.ui:ui-test-manifest:1.6.0'
 }
